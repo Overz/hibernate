@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+
+  db:
+    image: postgres:latest
+    restart: on-failure
+    hostname: db.local
+    container_name: postgres-container
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - '5555:5432'
+    expose:
+      - 5555
+    volumes:
+      - .:/volumes/postgres
+    labels:
+      - postgres/img
+    networks:
+      applications:
+        ipv4_address: 172.20.0.3
+
+  adminer:
+    image: adminer:latest
+    restart: always
+    hostname: adm.local
+    container_name: adminer-container
+    environment:
+      ADMINER_DEFAULT_SERVER: '172.20.0.3'
+    ports:
+      - 8000:8080
+    expose:
+      - 8000
+    depends_on:
+      - db
+    labels:
+      - adminer/img
+    volumes:
+      - .:/volumes/adminer
+    networks:
+      applications:
+        ipv4_address: 172.20.0.4
+
+networks:
+  applications:
+    driver: bridge
+    name: application
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
